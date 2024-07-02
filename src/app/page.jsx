@@ -1,14 +1,20 @@
 "use client";
 
 import Image from "next/image";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [contact, setContact] = useState(null);
+  const [contacts, setContacts] = useState([]);
   const [error, setError] = useState("");
-  // const props = ["name", "email", "tel", "address", "icon"];
-  // const opts = { multiple: true };
+
+  // Load contacts from localStorage on component mount
+  useEffect(() => {
+    const storedContacts = localStorage.getItem("contacts");
+    if (storedContacts) {
+      setContacts(JSON.parse(storedContacts));
+    }
+  }, []);
+
   function openContactPicker() {
     const supported = "contacts" in navigator && "ContactsManager" in window;
 
@@ -16,17 +22,22 @@ export default function Home() {
       getContacts();
     } else {
       alert(
-        "Contact list API not supported!. Only for android mobile chrome and chrome version > 80"
+        "Contact list API not supported! Only for Android mobile Chrome and Chrome version > 80"
       );
     }
   }
+
   async function getContacts() {
     const props = ["name", "email", "tel"];
     const opts = { multiple: true };
 
     try {
-      const contacts = await navigator.contacts.select(props, opts);
-      alert(JSON.stringify(contacts));
+      const selectedContacts = await navigator.contacts.select(props, opts);
+      if (selectedContacts.length > 0) {
+        const newContacts = [...contacts, ...selectedContacts];
+        setContacts(newContacts);
+        localStorage.setItem("contacts", JSON.stringify(newContacts));
+      }
     } catch (err) {
       alert(err);
     }
@@ -41,13 +52,20 @@ export default function Home() {
         >
           Pick a Contact
         </button>
-        {error && error}
-        {contact && (
+        {error && <div className="error">{error}</div>}
+        {contacts.length > 0 && (
           <div>
-            <h2>Contact Selected</h2>
-            <p>Name: {contact.name}</p>
-            <p>Email: {contact.email}</p>
-            {/* Render other contact details as needed */}
+            <h2>Contacts List</h2>
+            <ul>
+              {contacts.map((contact, index) => (
+                <li key={index} className="contact-item">
+                  <p>Name: {contact.name}</p>
+                  <p>Email: {contact.email}</p>
+                  <p>Tel: {contact.tel}</p>
+                  {/* Render other contact details as needed */}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
