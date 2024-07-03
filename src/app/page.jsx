@@ -265,20 +265,20 @@ export default function Home() {
 
     try {
       const selectedContacts = await navigator.contacts.select(props, opts);
+
       if (selectedContacts.length > 0) {
-        const contactData = [
-          ...contacts,
-          ...selectedContacts.map((contact) => ({
-            name: contact.name[0], // Use contact.name[0] as it returns an array
-            email: contact.email[0], // Use contact.email[0] as it returns an array
-            tel: contact.tel[0], // If you want to store the telephone number
-            icon: contact.icon[0], // If you want to store the icon
-            timezone: "",
-            place: "",
-          })),
-        ];
+        const selectedContact = selectedContacts[0]; // Get the first contact
+
+        const contactData = {
+          name: selectedContact.name[0], // name, email, tel, and icon are arrays
+          email: selectedContact.email[0],
+          tel: selectedContact.tel[0],
+          icon: selectedContact.icon[0],
+          timezone: "",
+          place: "",
+        };
+
         setNewContact(contactData); // Update the state using setContacts
-        // openDB().then((db) => saveContacts(db, [...contacts, contactData])); // Save to IndexedDB
       }
     } catch (err) {
       alert(err);
